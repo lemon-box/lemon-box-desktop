@@ -1,6 +1,7 @@
-import {app, BrowserWindow, nativeImage, Tray} from 'electron'
+import {app, BrowserWindow, ipcMain, nativeImage, Tray} from 'electron'
 import path from 'node:path'
 import AppInfoDefine from '../common/define/app-info-define.ts'
+import FrameworkApplicationImpl from './framework-impl/framework-application-impl.ts'
 
 process.env.DIST = path.join(__dirname, '../dist')
 process.env.VITE_PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.DIST, '../public')
@@ -36,6 +37,7 @@ function createWindow() {
     // win.loadFile('dist/index.html')
     win.loadFile(path.join(process.env.DIST, 'index.html'))
   }
+  win?.webContents.openDevTools()
 }
 
 app.on('window-all-closed', () => {
@@ -77,4 +79,19 @@ function toggleWin() {
   }
 }
 
+function registerFramework(tag: string, impl: any) {
+  console.log('register framework', tag)
+  Object.getOwnPropertyNames(impl.prototype).forEach((key) => {
+    const value = impl.prototype[key]
+    if (typeof value === 'function' && key !== 'constructor') {
+      ipcMain.handle(tag + '.' + key, (...args: any) => {
+        return value.call(impl.prototype, ...args)
+      })
+    }
+  })
+}
+
+app.on('ready', () => {
+  registerFramework('application', FrameworkApplicationImpl)
+})
 app.whenReady().then(createWindow)
