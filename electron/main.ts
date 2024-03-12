@@ -29,6 +29,7 @@ function createWindow() {
     fullscreenable: false,
     resizable: false,
     transparent: true,
+    hasShadow: true,
   })
   win?.setVisibleOnAllWorkspaces(true)
   win.setAlwaysOnTop(true)
