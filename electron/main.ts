@@ -1,15 +1,7 @@
 import {app, BrowserWindow, nativeImage, Tray} from 'electron'
 import path from 'node:path'
+import AppInfoDefine from '../common/define/app-info-define.ts'
 
-// The built directory structure
-//
-// ├─┬─┬ dist
-// │ │ └── index.html
-// │ │
-// │ ├─┬ dist-electron
-// │ │ ├── main.js
-// │ │ └── preload.js
-// │
 process.env.DIST = path.join(__dirname, '../dist')
 process.env.VITE_PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.DIST, '../public')
 
@@ -28,16 +20,14 @@ function createWindow() {
     frame: false,
     fullscreenable: false,
     resizable: false,
-    // transparent: true,
+    alwaysOnTop: true,
     hasShadow: true,
+    skipTaskbar: true,
+    type: 'panel'
   })
-  win?.setVisibleOnAllWorkspaces(true)
-  win.setAlwaysOnTop(true)
-  // win.webContents.openDevTools()
-
-  win.webContents.on('did-finish-load', () => {
-    win?.webContents.send('main-process-message', (new Date).toLocaleString())
-  })
+  if (app.dock) {
+    app.dock.hide()
+  }
 
   if (VITE_DEV_SERVER_URL) {
     win.loadURL('http://localhost:40531')
@@ -48,9 +38,6 @@ function createWindow() {
   }
 }
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
@@ -59,8 +46,6 @@ app.on('window-all-closed', () => {
 })
 
 app.on('activate', () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow()
   }
@@ -70,11 +55,11 @@ let tray = null
 app.whenReady().then(() => {
   const menuBarIcon = nativeImage.createFromPath(path.join(process.env.VITE_PUBLIC, 'lemon-box-logo.png'))
   tray = new Tray(menuBarIcon.resize({width: 20, height: 20}))
-  tray.on('click', function (event, bounds) {
-    win?.setBounds({x: bounds.x - 200, y: bounds.y > 520 ? bounds.y - 510 : bounds.y + 20, width: 400, height: 500})
+  tray.on('click', function (_, bounds) {
+    win?.setBounds({x: bounds.x - 200, y: bounds.y > 520 ? bounds.y - 510 : bounds.y + 20, width: 460, height: 500})
     toggleWin()
   })
-  tray.setToolTip('This is my application.')
+  tray.setToolTip(AppInfoDefine.APP_NAME)
 })
 
 function toggleWin() {
@@ -82,19 +67,14 @@ function toggleWin() {
     win?.hide()
   } else {
     win?.show()
-    // win?.focus()
     setTimeout(() => {
       win?.once('blur', () => {
-        // if (!win?.webContents.isDevToolsOpened()) {
-        win?.hide()
-        // }
-        console.log('blur!!!')
+        if (!win?.webContents.isDevToolsOpened()) {
+          win?.hide()
+        }
       })
     })
   }
 }
 
-if (app.dock) {
-  app.dock.hide()
-}
 app.whenReady().then(createWindow)
