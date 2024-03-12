@@ -30,7 +30,7 @@ function createWindow() {
     resizable: false,
     transparent: true
   })
-  win.webContents.openDevTools()
+  // win.webContents.openDevTools()
 
   // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
@@ -38,7 +38,7 @@ function createWindow() {
   })
 
   win.on('blur', () => {
-    if (win?.webContents.isDevToolsOpened()) {
+    if (!win?.webContents.isDevToolsOpened()) {
       win?.hide()
     }
   })
@@ -85,7 +85,7 @@ app.whenReady().then(() => {
 // Set window position to that display coordinates
 //     win?.setPosition(currentDisplay.workArea.x, currentDisplay.workArea.y)
     win?.setVisibleOnAllWorkspaces(true)
-    win?.setBounds({x: bounds.x - 200, y: bounds.y})
+    win?.setBounds({x: bounds.x - 200, y: bounds.y > 500 ? bounds.y - 500 : bounds.y + 20, width: 400, height: 500})
     toggleWin()
   })
   tray.setToolTip('This is my application.')
