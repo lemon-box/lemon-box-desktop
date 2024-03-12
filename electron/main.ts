@@ -28,7 +28,7 @@ function createWindow() {
     frame: false,
     fullscreenable: false,
     resizable: false,
-    transparent: true,
+    // transparent: true,
     hasShadow: true,
   })
   win?.setVisibleOnAllWorkspaces(true)
