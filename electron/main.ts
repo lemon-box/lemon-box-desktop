@@ -31,6 +31,7 @@ function createWindow() {
     transparent: true,
   })
   win?.setVisibleOnAllWorkspaces(true)
+  win.setAlwaysOnTop(true)
   // win.webContents.openDevTools()
 
   win.webContents.on('did-finish-load', () => {
