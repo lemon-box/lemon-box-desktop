@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build && electron-builder",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-icons":"electron-icon-builder --input=./public/lemon-box-logo.png --output=build --flatten"
   },
   "dependencies": {
     "vue": "^3.3.4"
