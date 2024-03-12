@@ -70,7 +70,7 @@ app.on('activate', () => {
   }
 })
 
-app.dock.hide()
+// app.dock.hide()
 
 let tray = null
 app.whenReady().then(() => {
