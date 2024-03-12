@@ -38,7 +38,7 @@ function createWindow() {
   })
 
   win.on('blur', () => {
-    if (!win.webContents.isDevToolsOpened()) {
+    if (win?.webContents.isDevToolsOpened()) {
       win?.hide()
     }
   })
