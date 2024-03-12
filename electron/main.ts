@@ -1,6 +1,5 @@
-import {app, BrowserWindow} from 'electron'
+import {app, BrowserWindow, nativeImage, Tray} from 'electron'
 import path from 'node:path'
-import {Tray, Menu, nativeImage, screen} from 'electron'
 
 // The built directory structure
 //
@@ -25,22 +24,17 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     },
+    show: false,
     frame: false,
     fullscreenable: false,
     resizable: false,
-    transparent: true
+    transparent: true,
   })
+  win?.setVisibleOnAllWorkspaces(true)
   // win.webContents.openDevTools()
 
-  // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', (new Date).toLocaleString())
-  })
-
-  win.on('blur', () => {
-    if (!win?.webContents.isDevToolsOpened()) {
-      win?.hide()
-    }
   })
 
   if (VITE_DEV_SERVER_URL) {
@@ -70,22 +64,12 @@ app.on('activate', () => {
   }
 })
 
-// app.dock.hide()
-
 let tray = null
 app.whenReady().then(() => {
   const menuBarIcon = nativeImage.createFromPath(path.join(process.env.VITE_PUBLIC, 'lemon-box-logo.png'))
   tray = new Tray(menuBarIcon.resize({width: 20, height: 20}))
-  console.log('创建了tray')
   tray.on('click', function (event, bounds) {
-    console.log('tray click', bounds)
-    // Find the display where the mouse cursor will be
-    // const {x, y} = screen.getCursorScreenPoint();
-    // const currentDisplay = screen.getDisplayNearestPoint({x, y})
-// Set window position to that display coordinates
-//     win?.setPosition(currentDisplay.workArea.x, currentDisplay.workArea.y)
-    win?.setVisibleOnAllWorkspaces(true)
-    win?.setBounds({x: bounds.x - 200, y: bounds.y > 500 ? bounds.y - 500 : bounds.y + 20, width: 400, height: 500})
+    win?.setBounds({x: bounds.x - 200, y: bounds.y > 520 ? bounds.y - 510 : bounds.y + 20, width: 400, height: 500})
     toggleWin()
   })
   tray.setToolTip('This is my application.')
@@ -96,7 +80,19 @@ function toggleWin() {
     win?.hide()
   } else {
     win?.show()
+    // win?.focus()
+    setTimeout(() => {
+      win?.once('blur', () => {
+        // if (!win?.webContents.isDevToolsOpened()) {
+        win?.hide()
+        // }
+        console.log('blur!!!')
+      })
+    })
   }
 }
 
+if (app.dock) {
+  app.dock.hide()
+}
 app.whenReady().then(createWindow)
