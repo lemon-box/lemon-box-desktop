@@ -99,6 +99,7 @@ function useLoading() {
       safeDOM.append(document.body, oDiv)
     },
     removeLoading() {
+      console.log('哈哈哈哈被调用了')
       safeDOM.remove(document.head, oStyle)
       safeDOM.remove(document.body, oDiv)
     },
@@ -111,6 +112,7 @@ const { appendLoading, removeLoading } = useLoading()
 domReady().then(appendLoading)
 
 window.onmessage = ev => {
+  console.log("被vue调用了啊2222！！")
   ev.data.payload === 'removeLoading' && removeLoading()
 }
 

@@ -1,5 +1,6 @@
-import { app, BrowserWindow } from 'electron'
+import {app, BrowserWindow} from 'electron'
 import path from 'node:path'
+import {Tray, Menu, nativeImage, screen} from 'electron'
 
 // The built directory structure
 //
@@ -22,17 +23,29 @@ function createWindow() {
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload.js')
     },
+    frame: false,
+    fullscreenable: false,
+    resizable: false,
+    transparent: true
   })
+  win.webContents.openDevTools()
 
   // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', (new Date).toLocaleString())
   })
 
+  win.on('blur', () => {
+    if (!win.webContents.isDevToolsOpened()) {
+      win?.hide()
+    }
+  })
+
   if (VITE_DEV_SERVER_URL) {
-    win.loadURL(VITE_DEV_SERVER_URL)
+    win.loadURL('http://localhost:5174')
+    // win.loadURL(VITE_DEV_SERVER_URL)
   } else {
     // win.loadFile('dist/index.html')
     win.loadFile(path.join(process.env.DIST, 'index.html'))
@@ -56,5 +69,34 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
+app.dock.hide()
+
+let tray = null
+app.whenReady().then(() => {
+  const menuBarIcon = nativeImage.createFromPath(path.join(process.env.VITE_PUBLIC, 'lemon-box-logo.png'))
+  tray = new Tray(menuBarIcon.resize({width: 20, height: 20}))
+  console.log('创建了tray')
+  tray.on('click', function (event, bounds) {
+    console.log('tray click', bounds)
+    // Find the display where the mouse cursor will be
+    // const {x, y} = screen.getCursorScreenPoint();
+    // const currentDisplay = screen.getDisplayNearestPoint({x, y})
+// Set window position to that display coordinates
+//     win?.setPosition(currentDisplay.workArea.x, currentDisplay.workArea.y)
+    win?.setVisibleOnAllWorkspaces(true)
+    win?.setBounds({x: bounds.x - 200, y: bounds.y})
+    toggleWin()
+  })
+  tray.setToolTip('This is my application.')
+})
+
+function toggleWin() {
+  if (win?.isVisible()) {
+    win?.hide()
+  } else {
+    win?.show()
+  }
+}
 
 app.whenReady().then(createWindow)
